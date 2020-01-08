@@ -7,8 +7,18 @@ import java.util.HashMap;
 import java.util.List;
 
 public class ErrorServer extends FrameObject {
-    public ErrorServer(String command, HashMap<String, String> headers, String body) {
-        super(command, headers, body);
+
+    private String receiptId;
+    private String message;
+
+    public ErrorServer(String command, HashMap<String, String> headers, String body, boolean isError) {
+        super(command, headers, body, isError);
+        init();
+    }
+
+    private void init() {
+        this.receiptId = getHeaders().get("receipt-id");
+        this.message = getHeaders().get("message");
     }
 
     @Override

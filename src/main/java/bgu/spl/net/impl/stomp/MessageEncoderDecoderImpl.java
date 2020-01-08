@@ -78,7 +78,8 @@ MessageEncoderDecoderImpl implements MessageEncoderDecoder<FrameObject> {
             frameObject = new SubscribeClient(message[0], headers, body);
 
         else if(message[0].equals("SEND")) {
-            if(body.contains("borrow"))
+            frameObject = new SendClient(message[0], headers, body);
+      /*      if(body.contains("borrow"))
                 frameObject = new SendBorrowClient(message[0], headers, body);
             else if(body.contains("add"))
                 frameObject = new SendAddClient(message[0], headers, body);
@@ -86,6 +87,7 @@ MessageEncoderDecoderImpl implements MessageEncoderDecoder<FrameObject> {
                 frameObject = new SendReturnClient(message[0], headers, body);
             else if(body.contains("status"))
                 frameObject = new SendStatusClient(message[0], headers, body);
+                */
         }
 
         return frameObject;

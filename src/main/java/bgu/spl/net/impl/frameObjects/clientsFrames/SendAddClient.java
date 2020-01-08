@@ -7,8 +7,16 @@ import java.util.HashMap;
 import java.util.List;
 
 public class SendAddClient extends FrameObject {
-    public SendAddClient(String type, HashMap<String, String> headers, String body) {
+
+    public SendAddClient(String type, HashMap<String, String> headers, String body)
+    {
         super(type, headers, body);
+    }
+
+    private String destination;
+
+    private void init() {
+        this.destination = getHeaders().get("destination");
     }
 
     @Override

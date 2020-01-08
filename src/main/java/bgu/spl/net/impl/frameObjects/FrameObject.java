@@ -10,12 +10,19 @@ public abstract class FrameObject {
     private HashMap<String, String> headers;
     private String body;
     private final String frameEnd = "\u0000";
-
+    private boolean isError = false;
 
     public FrameObject(String command, HashMap<String, String> headers, String body) {
         this.command = command;
         this.headers = headers;
         this.body = body;
+    }
+
+    public FrameObject(String command, HashMap<String, String> headers, String body, boolean isError) {
+        this.command = command;
+        this.headers = headers;
+        this.body = body;
+        this.isError = isError;
     }
 
     public abstract boolean execute();
@@ -46,6 +53,14 @@ public abstract class FrameObject {
 
     public String getFrameEnd() {
         return frameEnd;
+    }
+
+    public boolean isError() {
+        return isError;
+    }
+
+    public void setError(boolean error) {
+        isError = error;
     }
 
     @Override
