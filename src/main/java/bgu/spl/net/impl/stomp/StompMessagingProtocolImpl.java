@@ -81,12 +81,12 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
             }
 
             if(sendClient.getMission().equals("return")) { //send return
-                FrameObject msgToReply = tryBorrow(msg);
+                FrameObject msgToReply = tryReturn(msg);
                 //needs to send
             }
 
             if(sendClient.getMission().equals("status")) { //send status
-                FrameObject msgToReply = tryBorrow(msg);
+                FrameObject msgToReply = tryStatus(msg);
                 //needs to send
             }
         }
@@ -242,9 +242,31 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
         return null;
     }
 
-    private FrameObject status (FrameObject msg)
+    private FrameObject tryStatus (FrameObject msg)
     {
-        return null;
+        SendClient sc = (SendClient) msg;
+        HashMap<String, String> outHeaders = new HashMap<>();
+        if (!validateHeaders(msg.getHeaders())) {  //Invalidate headers
+            outHeaders.put("receipt-id", String.valueOf(connectionId));
+            outHeaders.put("message", "malformed frame received");
+            return new ErrorServer("ERROR", outHeaders, "", true);
+        }
+        if (connections.getHandlers().containsKey(connectionId)) { //Check if connection exists
+            String genre = sc.getDestination();
+            outHeaders.put("subscription", String.valueOf(connectionId));
+            outHeaders.put("Message-id", String.valueOf(currMsdId));
+            currMsdId++;
+            outHeaders.put("destination", genre);
+            MessageServer ms = new MessageServer("MESSAGE", outHeaders, "Book status");
+            //TODO stopped here
+
+            return null;
+
+        } else { //Connection doesn't exist
+            outHeaders.put("receipt-id", String.valueOf(connectionId));
+            outHeaders.put("message", "user is not connected");
+            return new ErrorServer("ERROR", outHeaders, "", true);
+        }
     }
 
     private String getNameByConID (int connectionId)
