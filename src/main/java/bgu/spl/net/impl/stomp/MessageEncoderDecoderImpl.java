@@ -60,6 +60,7 @@ MessageEncoderDecoderImpl implements MessageEncoderDecoder<FrameObject> {
         String body = "";
 
         //Get the headers and the body of the message
+        //TODO body can include :, we need to do while loop until there is enter, from than forward that is the body
         for (int i = 1; i < message.length-1; i++) {
             if(message[i].contains(":"))
                 headers.put(message[i].split(":")[0], message[i].split(":")[1]);
@@ -79,15 +80,7 @@ MessageEncoderDecoderImpl implements MessageEncoderDecoder<FrameObject> {
 
         else if(message[0].equals("SEND")) {
             frameObject = new SendClient(message[0], headers, body);
-      /*      if(body.contains("borrow"))
-                frameObject = new SendBorrowClient(message[0], headers, body);
-            else if(body.contains("add"))
-                frameObject = new SendAddClient(message[0], headers, body);
-            else if(body.contains("return"))
-                frameObject = new SendReturnClient(message[0], headers, body);
-            else if(body.contains("status"))
-                frameObject = new SendStatusClient(message[0], headers, body);
-                */
+
         }
 
         return frameObject;

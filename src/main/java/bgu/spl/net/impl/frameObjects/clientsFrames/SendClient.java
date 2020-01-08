@@ -18,11 +18,11 @@ public class SendClient extends FrameObject {
 
     private void init() {
         this.destination = getHeaders().get("destination");
-        if(getBody().contains("add"))
+        if(getBody().contains("added"))
             mission = "add";
         else if(getBody().contains("borrow"))
             mission = "borrow";
-        else if(getBody().contains("return"))
+        else if(getBody().contains("Returning"))
             mission = "return";
         else if(getBody().contains("status"))
             mission = "status";

@@ -23,6 +23,7 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
     private int connectionId;
     private ConnectionsImpl<FrameObject> connections;
     private int currMsdId;
+    private String userName;
 
     /**
      * Used to initiate the current client protocol with it's personal connection ID and the connections implementation
@@ -35,6 +36,7 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
         this.connections = (ConnectionsImpl<FrameObject>) connections;
         this.connectionId = connectionId;
         currMsdId = 1;
+        userName = getNameByConID(connectionId);
     }
 
     @Override
@@ -62,15 +64,15 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
         }
         else if (msg.getCommand().equals("SEND"))
         {
-            if(msg.getBody().contains("borrow")) { //send borrow
+            SendClient sendClient = (SendClient) msg;
+            if(sendClient.getMission().equals("borrow")) { //send borrow
                 FrameObject msgToReply = tryBorrow(msg);
                 //needs to send
             }
 
-            if(msg.getBody().contains("add")) { //send add
+            if(sendClient.getMission().equals("add")) { //send add
                 FrameObject msgToReply = tryBorrow(msg);
                 if(!msgToReply.isError()) {
-                    SendClient sendClient = (SendClient)msgToReply;
                     connections.send(sendClient.getDestination(), msgToReply);
                 }
                 else {
@@ -78,12 +80,12 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
                 }
             }
 
-            if(msg.getBody().contains("return")) { //send return
+            if(sendClient.getMission().equals("return")) { //send return
                 FrameObject msgToReply = tryBorrow(msg);
                 //needs to send
             }
 
-            if(msg.getBody().contains("status")) { //send status
+            if(sendClient.getMission().equals("status")) { //send status
                 FrameObject msgToReply = tryBorrow(msg);
                 //needs to send
             }
@@ -99,58 +101,57 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
         return shouldTerminate;
     }
 
-    private boolean validateHeaders(HashMap<String, String> headers) {
-        for (String s : headers.keySet()) {
-            if (headers.get(s) == null)
-                return false;
-        }
-        return true;
-    }
-
-    private FrameObject tryLogin(FrameObject msg) {
+    private FrameObject tryLogin(FrameObject msg) { //make suer thats whats should happen
         ConnectClient cc = (ConnectClient) msg;
         HashMap<String, String> outHeaders = new HashMap<>();
-        if (validateHeaders(msg.getHeaders())) { //Validate headers
-            String userName = cc.getLogin();
-            String password = cc.getPasscode();
-            if (connections.getUsers().containsKey(userName)) { //User exists
-                if (connections.getUsers().get(userName).equals(password)) { //Connection succeed
-                    outHeaders.put("version", cc.getAccept());
-                    return new ConnectedServer("CONNECTED", outHeaders, "");
-                } else { //Password don't match
+
+        if (!validateHeaders(msg.getHeaders())) { //Invalidate headers
+            outHeaders.put("receipt-id", String.valueOf(connectionId));
+            outHeaders.put("message", "malformed frame received");
+            return new ErrorServer("ERROR", outHeaders, "", true);
+        }
+
+        String userName = cc.getLogin();
+        String password = cc.getPasscode();
+
+        if (connections.getUsers().containsKey(userName)) { //User exists
+            if (connections.getUsers().get(userName).equals(password)) { //Connection succeed
+                outHeaders.put("version", cc.getAccept());
+                return new ConnectedServer("CONNECTED", outHeaders, "");
+            } else { //Password don't match
                     outHeaders.put("receipt-id", String.valueOf(connectionId));
                     outHeaders.put("message", "Wrong password");
                     return new ErrorServer("ERROR", outHeaders, "", true);
                 }
-            } else { //Create new user
-                connections.getUsers().put(userName, password);
-                outHeaders.put("accept", cc.getAccept());
-                return new ConnectedServer("CONNECTED", outHeaders, "");
-            }
-        } else { //Invalid input
-            outHeaders.put("receipt-id", String.valueOf(connectionId));
-            outHeaders.put("message", "malformed frame received");
-            return new ErrorServer("ERROR", outHeaders, "", true);
+        } else { //Create new user
+            connections.getUsers().put(userName, password);
+            outHeaders.put("accept", cc.getAccept());
+            return new ConnectedServer("CONNECTED", outHeaders, "");
         }
     }
 
     private FrameObject trySubscribe(FrameObject msg) {
         SubscribeClient sc = (SubscribeClient) msg;
         HashMap<String, String> outHeaders = new HashMap<>();
-        if (validateHeaders(msg.getHeaders())) { //Validate headers
-            if (connections.getHandlers().containsKey(connectionId)) { //Check if connection exists
-                String genre = sc.getDestination();
-                String receiptId = sc.getReceiptId();
-                String userName = "";
-                for (String s : connections.getUserHandlers().keySet()) { //Find the user name
-                    if (connections.getUserHandlers().get(s) == connectionId)
-                        userName = s;
-                }
-                if (connections.getGenreSubscribers().containsKey(genre)) { //If genre exists
-                    if (connections.getGenreSubscribers().get(genre).contains(userName))  //If user is already subscribed to this topic, do nothing.
+
+        if (!validateHeaders(msg.getHeaders())) //Invalidate headers
+        {
+            outHeaders.put("receipt-id", String.valueOf(connectionId));
+            outHeaders.put("message", "malformed frame received");
+            return new ErrorServer("ERROR", outHeaders, "", true);
+        }
+
+        if (connections.getHandlers().containsKey(connectionId)) { //Check if connection exists
+
+            String genre = sc.getDestination();
+            String receiptId = sc.getReceiptId();
+
+            if (connections.getGenreSubscribers().containsKey(genre)) { //If genre exists
+                if (connections.getGenreSubscribers().get(genre).contains(userName))  //If user is already subscribed to this topic, do nothing.
                         return null;
                     else { //User isn't subscribed to this topic
                         outHeaders.put("receipt-id", receiptId);
+                        connections.getGenreSubscribers().get(genre).add(userName);
                         return new ReciptServer("Receipt", outHeaders, "");
                     }
                 } else { //Genre doesn't exist, create new one
@@ -164,12 +165,9 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
                 outHeaders.put("receipt-id", String.valueOf(connectionId));
                 outHeaders.put("message", "user is not connected");
                 return new ErrorServer("ERROR", outHeaders, "", true);
-            }
-        } else { //Invalid input
-            outHeaders.put("receipt-id", String.valueOf(connectionId));
-            outHeaders.put("message", "malformed frame received");
-            return new ErrorServer("ERROR", outHeaders, "", true);
         }
+
+
     }
 
     private FrameObject tryDisconnect(FrameObject msg) {
@@ -207,39 +205,34 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
     {
         SendClient sc = (SendClient) msg;
         HashMap<String, String> outHeaders = new HashMap<>();
-        if (validateHeaders(msg.getHeaders())) { //Validate headers
-            if (connections.getHandlers().containsKey(connectionId)) { //Check if connection exists
-                String genre = sc.getDestination();
-                String userName = "";
-                for (String s : connections.getUserHandlers().keySet()) { //Find the user name
-                    if (connections.getUserHandlers().get(s) == connectionId)
-                        userName = s;
-                }
-                if (connections.getGenreSubscribers().containsKey(genre)) { //If genre exists
-                    outHeaders.put("subscription", String.valueOf(connectionId));
-                    outHeaders.put("Message-id", String.valueOf(currMsdId));
-                    currMsdId++;
-                    outHeaders.put("destination", String.valueOf(genre));
-                    return new MessageServer("MESSAGE", outHeaders, userName + " has added the book " + sc.getBookName());
-                }
-                else { //Genre doesn't exist, create new one
-                    ConcurrentLinkedQueue<String> users = new ConcurrentLinkedQueue<>();
-                    users.add(userName);
-                    connections.getGenreSubscribers().put(genre, users);
-                    outHeaders.put("subscription", String.valueOf(connectionId));
-                    outHeaders.put("Message-id", String.valueOf(currMsdId));
-                    currMsdId++;
-                    outHeaders.put("destination", String.valueOf(genre));
-                    return new MessageServer("MESSAGE", outHeaders, userName + " has added the book " + sc.getBookName());
-                }
-            } else { //Connection doesn't exist
-                outHeaders.put("receipt-id", String.valueOf(connectionId));
-                outHeaders.put("message", "user is not connected");
-                return new ErrorServer("ERROR", outHeaders, "", true);
-            }
-        } else { //Invalid input
+        if (!validateHeaders(msg.getHeaders())) {  //Invalidate headers
             outHeaders.put("receipt-id", String.valueOf(connectionId));
             outHeaders.put("message", "malformed frame received");
+            return new ErrorServer("ERROR", outHeaders, "", true);
+        }
+
+        if (connections.getHandlers().containsKey(connectionId)) { //Check if connection exists
+            String genre = sc.getDestination();
+            if (connections.getGenreSubscribers().containsKey(genre)) { //If genre exists
+
+                outHeaders.put("subscription", String.valueOf(connectionId));
+                outHeaders.put("Message-id", String.valueOf(currMsdId));
+                currMsdId++;
+                outHeaders.put("destination", String.valueOf(genre));
+                return new MessageServer("MESSAGE", outHeaders, userName + " has added the book " + sc.getBookName());
+            } else { //Genre doesn't exist, create new one
+                ConcurrentLinkedQueue<String> users = new ConcurrentLinkedQueue<>();
+                users.add(userName);
+                connections.getGenreSubscribers().put(genre, users);
+                outHeaders.put("subscription", String.valueOf(connectionId));
+                outHeaders.put("Message-id", String.valueOf(currMsdId));
+                currMsdId++;
+                outHeaders.put("destination", String.valueOf(genre));
+                return new MessageServer("MESSAGE", outHeaders, userName + " has added the book " + sc.getBookName());
+            }
+        } else { //Connection doesn't exist
+            outHeaders.put("receipt-id", String.valueOf(connectionId));
+            outHeaders.put("message", "user is not connected");
             return new ErrorServer("ERROR", outHeaders, "", true);
         }
     }
@@ -254,5 +247,22 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
         return null;
     }
 
+    private String getNameByConID (int connectionId)
+    {
+        String userName = "";
+        for (String s : connections.getUserHandlers().keySet()) { //Find the user name
+            if (connections.getUserHandlers().get(s) == connectionId)
+                userName = s;
+        }
+        return userName;
+    }
+
+    private boolean validateHeaders(HashMap<String, String> headers) {
+        for (String s : headers.keySet()) {
+            if (headers.get(s) == null)
+                return false;
+        }
+        return true;
+    }
 }
 
