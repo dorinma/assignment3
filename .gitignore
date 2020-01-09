@@ -32,7 +32,8 @@
 # .idea/compiler.xml
 # .idea/modules.xml
 # .idea/*.iml
-#.iml
+#iml.
+#iml/*.
 # .idea/modules
 # *.iml
 # *.ipr
