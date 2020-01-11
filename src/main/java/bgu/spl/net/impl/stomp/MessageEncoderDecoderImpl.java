@@ -7,10 +7,6 @@ import bgu.spl.net.impl.frameObjects.clientsFrames.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-
-import javafx.util.Pair;
 
 public class
 MessageEncoderDecoderImpl implements MessageEncoderDecoder<FrameObject> {
@@ -77,6 +73,9 @@ MessageEncoderDecoderImpl implements MessageEncoderDecoder<FrameObject> {
 
         else if(message[0].equals("SUBSCRIBE"))
             frameObject = new SubscribeClient(message[0], headers, body);
+
+        else if(message[0].equals("UNSUBSCRIBE"))
+            frameObject = new UnsubscribeClient(message[0], headers, body);
 
         else if(message[0].equals("SEND")) {
             frameObject = new SendClient(message[0], headers, body);
