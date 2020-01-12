@@ -12,6 +12,7 @@ import bgu.spl.net.srv.ConnectionsImpl;
 import bgu.spl.net.srv.User;
 import com.sun.org.apache.bcel.internal.generic.INSTANCEOF;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -38,7 +39,7 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
     }
 
     @Override
-    public void process(T message) {
+    public void process(T message) throws IOException {
         FrameObject msg = (FrameObject) message;
 
         if (msg.getCommand().equals("CONNECT")) {
