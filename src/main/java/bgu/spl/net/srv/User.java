@@ -10,7 +10,7 @@ public class User {
     private String userPass;
     private boolean isLogged;
     private int connectionId;
-    private List genres;
+    private List<String> genres;
     private HashMap<Integer, String> idSubscriptions;
 
     public User(String userName, String userPass, int connectionHandlerId) {
@@ -55,11 +55,11 @@ public class User {
         this.connectionId = connectionId;
     }
 
-    public List getGenres() {
+    public List<String> getGenres() {
         return genres;
     }
 
-    public void setGenres(List genres) {
+    public void setGenres(List<String> genres) {
         this.genres = genres;
     }
 

@@ -74,7 +74,6 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
 
     }
 
-
     /**
      * @return true if the connection should be terminated
      */
@@ -83,7 +82,7 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
         return shouldTerminate;
     }
 
-    private FrameObject tryLogin(FrameObject msg) { //make suer thats whats should happen
+    private FrameObject tryLogin(FrameObject msg) { //make sure that's what should happen
         ConnectClient cc = (ConnectClient) msg;
         HashMap<String, String> outHeaders = new HashMap<>();
 
@@ -100,7 +99,7 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
             if (u.getUserName().equals(((ConnectClient) msg).getLogin())) {
                 foundUser = true;
                 if (u.isLogged()) {
-                    //to do error. cant be logged twice
+                    //TODO error. cant be logged twice
                     return null;
                 } else {
                     if (u.getUserPass() == ((ConnectClient) msg).getPasscode()) {
@@ -247,8 +246,7 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
 
     }
 
-    private FrameObject trySend (FrameObject msg)
-    {
+    private FrameObject trySend (FrameObject msg) {
         SendClient sc = (SendClient) msg;
         HashMap<String, String> outHeaders = new HashMap<>();
         if (!validateHeaders(msg.getHeaders())) {  //Invalidate headers
