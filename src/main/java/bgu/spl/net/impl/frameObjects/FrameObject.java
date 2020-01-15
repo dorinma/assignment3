@@ -67,9 +67,9 @@ public abstract class FrameObject {
     public String toString() {
         String output = this.command + "\n";
         for (String key : headers.keySet()) {
-            output = output + key + ":" + headers.get(key) + "\n";
+            output += key + ":" + headers.get(key) + "\n";
         }
-        output = output + body +'\n' + '\u0000';
+        output += body +'\n' + '\u0000';
         return output;
     }
 }

@@ -43,7 +43,7 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
     public void process(T message) throws IOException {
         FrameObject msg = (FrameObject) message;
 
-        System.out.println("entered server process with the MSG:" + msg.toString());
+        //System.out.println("entered server process with the MSG:" + msg.toString());
         if (msg.getCommand().equals("CONNECT")) {
             FrameObject msgToReply = tryLogin(msg);
             connections.send(connectionId, msgToReply);
@@ -127,7 +127,7 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
             User newUser = new User(((ConnectClient) msg).getLogin(), ((ConnectClient) msg).getPasscode(), connectionId);
             newUser.setLogged(true);
             connections.getUsers().put(connectionId, newUser);
-            outHeaders.put("accept", cc.getAccept());
+            outHeaders.put("version", cc.getAccept());
             return new ConnectedServer("CONNECTED", outHeaders, "");
 
         }
@@ -136,7 +136,7 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
 
     private FrameObject trySubscribe(FrameObject msg) {
         SubscribeClient sc = (SubscribeClient) msg;
-        System.out.println(msg.toString());
+        //System.out.println(msg.toString());
         sc.init();
         HashMap<String, String> outHeaders = new HashMap<>();
 
@@ -249,15 +249,16 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
         String receiptId = dc.getReceiptId();
         currUser.setLogged(false);
         outHeaders.put("receipt-id", receiptId);
-        System.out.println("trying disconnect, shoildTerminate = " + shouldTerminate);
+        //System.out.println("trying disconnect, shoildTerminate = " + shouldTerminate);
 
         return new ReciptServer("RECEIPT", outHeaders, "");
     }
 
     private FrameObject trySend (FrameObject msg) {
         SendClient sc = (SendClient) msg;
+        System.out.println("----------MSG RECEIVED: "+msg.toString());
         HashMap<String, String> outHeaders = new HashMap<>();
-        if (!validateHeaders(msg.getHeaders())) {  //Invalidate headers
+        if (!validateHeaders(msg.getHeaders())) {  //validate headers
             shouldTerminate = true;
             outHeaders.put("receipt-id", String.valueOf(connectionId));
             outHeaders.put("message", "malformed frame received");
@@ -265,7 +266,7 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
         }
 
         User currUser = connections.getUsers().get(connectionId);
-        if (currUser == null || !currUser.isLogged()) //user does not connect/ exist
+        if (currUser == null || !currUser.isLogged()) //user isn't connected or doesn't exist
         {
             shouldTerminate = true;
             outHeaders.put("receipt-id", String.valueOf(connectionId));
@@ -282,8 +283,6 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
                 subscription = i;
             }
         }
-
-        System.out.println(subscription);
 
         if (subscription == -1) { //create new genre
             String genre = sc.getDestination();

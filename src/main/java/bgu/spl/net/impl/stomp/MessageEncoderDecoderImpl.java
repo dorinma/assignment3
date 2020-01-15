@@ -56,15 +56,17 @@ MessageEncoderDecoderImpl implements MessageEncoderDecoder<FrameObject> {
         String body = "";
 
         //Get the headers and the body of the message
-        //TODO body can include :, we need to do while loop until there is enter, from than forward that is the body
         for (int i = 1; i < message.length; i++) {
-            if(message[i].contains(":"))
-                headers.put(message[i].split(":")[0], message[i].split(":")[1]);
+            if(message[i].contains(":")) {
+                //TODO do we need to check : in body if we're creating it?
+                //if(i != 1 && message[i - 1].length() > 0) //if the line before is empty, then this is not a header!
+                    headers.put(message[i].split(":")[0], message[i].split(":")[1]);
+            }
             else if(!message[i].isEmpty())
                 body += message[i];
         }
         //body += '\u0000';
-        System.out.println(message[0]);
+        //System.out.println(message[0]);
 
         //Get the type of the message
         if(message[0].equals("CONNECT"))
