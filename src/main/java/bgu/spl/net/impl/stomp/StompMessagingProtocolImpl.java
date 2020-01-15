@@ -36,40 +36,42 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
         this.connections = (ConnectionsImpl<FrameObject>) connections;
         this.connectionId = connectionId;
         currMsdId = 1;
+        shouldTerminate = false;
     }
 
     @Override
     public void process(T message) throws IOException {
         FrameObject msg = (FrameObject) message;
 
+        System.out.println("entered server process with the MSG:" + msg.toString());
         if (msg.getCommand().equals("CONNECT")) {
             FrameObject msgToReply = tryLogin(msg);
             connections.send(connectionId, msgToReply);
-            if (shouldTerminate)
-                connections.disconnect(connectionId);
+//            if (shouldTerminate)
+//                connections.disconnect(connectionId);
 
         } else if (msg.getCommand().equals("SUBSCRIBE")) {
             FrameObject msgToReply = trySubscribe(msg);
             connections.send(connectionId, msgToReply);
-            if (shouldTerminate)
-                connections.disconnect(connectionId);
+//            if (shouldTerminate)
+//                connections.disconnect(connectionId);
 
         } else if (msg.getCommand().equals("UNSUBSCRIBE")) {
             FrameObject msgToReply = tryUnsubscribe(msg);
             connections.send(connectionId, msgToReply);
-            if (shouldTerminate)
-                connections.disconnect(connectionId);
+//            if (shouldTerminate)
+//                connections.disconnect(connectionId);
 
         } else if (msg.getCommand().equals("DISCONNECT")) {
             FrameObject msgToReply = tryDisconnect(msg);
             connections.send(connectionId, msgToReply);
-            connections.disconnect(connectionId);
+            // connections.disconnect(connectionId);
 
         } else if (msg.getCommand().equals("SEND")) {
             FrameObject msgToReply = trySend(msg);
             connections.send(msgToReply.getHeaders().get("destination"), msgToReply);
-            if (shouldTerminate)
-                connections.disconnect(connectionId);
+//            if (shouldTerminate)
+//                connections.disconnect(connectionId);
         }
 
     }
@@ -134,11 +136,16 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
     }
 
     private FrameObject trySubscribe(FrameObject msg) {
+        System.out.println("~~~~~i am in function try to subscribe");
+
         SubscribeClient sc = (SubscribeClient) msg;
+        System.out.println(msg.toString());
+        sc.init();
         HashMap<String, String> outHeaders = new HashMap<>();
 
         if (!validateHeaders(msg.getHeaders())) //Invalidate headers
         {
+            System.out.println("XXX NOT VALID INPUT XXX");
             shouldTerminate = true;
             outHeaders.put("receipt-id", String.valueOf(connectionId));
             outHeaders.put("message", "malformed frame received");
@@ -148,6 +155,7 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
         User currUser = connections.getUsers().get(connectionId);
         if (currUser == null || !currUser.isLogged()) //user does not connect/ exist
         {
+            System.out.println("XXX NOT VALID USER XXX");
             shouldTerminate = true;
             outHeaders.put("receipt-id", String.valueOf(connectionId));
             outHeaders.put("message", "user is not connected");
@@ -155,7 +163,8 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
         }
         String genre = sc.getDestination();
         String receiptId = sc.getReceiptId();
-        int subId = Integer.parseInt(sc.getId());
+        String temp = sc.getId();
+        int subId = Integer.parseInt(temp);
 
         if (connections.getGenreSubscribers().containsKey(genre)) { //If genre exists
             if (connections.getGenreSubscribers().get(genre).contains(currUser))  //If user is already subscribed to this topic, do nothing.
@@ -243,8 +252,9 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
         String receiptId = dc.getReceiptId();
         currUser.setLogged(false);
         outHeaders.put("receipt-id", receiptId);
-        return new ReciptServer("RECEIPT", outHeaders, "");
+        System.out.println("trying disconnect, shoildTerminate = " + shouldTerminate);
 
+        return new ReciptServer("RECEIPT", outHeaders, "");
     }
 
     private FrameObject trySend (FrameObject msg)

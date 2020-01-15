@@ -10,24 +10,21 @@ public class StompServer {
 
     public static void main(String[] args) {
 
-        if (args[0].equals("tpc")) {
-
-//            Server<FrameObject> tpcServer = Server.threadPerClient(
-//                    7777,
-//                    ()-> new StompMessagingProtocol(),
-//                    ()-> new MessageEncoderDecoderImpl());
-//            tpcServer.serve();
-//
-//
-//
-//        } else if (args[0].equals("reactor")) {
-//            Server<FrameObject> recServer = Server.reactor(
-//                    3,
-//                    7777,
-//                    ()-> new StompMessagingProtocol(),
-//                    ()-> new MessageEncoderDecoderImpl());
-//            recServer.serve();
-        }
-
+            if (args[0].equals("tpc"))
+            {
+                Server<FrameObject> tpc = Server.threadPerClient(
+                        8888,
+                        () -> new StompMessagingProtocolImpl<>(),
+                        () -> new MessageEncoderDecoderImpl());
+                tpc.serve();
+            } else if (args[0].equals("reactor"))
+            {
+                Server<FrameObject> reactor = Server.reactor(
+                        2,
+                        7777,
+                        () -> new StompMessagingProtocolImpl<>(),
+                        () -> new MessageEncoderDecoderImpl());
+                reactor.serve();
+            }
     }
 }

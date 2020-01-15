@@ -1,5 +1,7 @@
 package bgu.spl.net.srv;
 
+import javafx.util.Pair;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,7 +23,18 @@ public class User {
         this.genres = new LinkedList();
         this.idSubscriptions = new HashMap<>();
     }
-
+    public String toString()
+    {
+        String user = this.userName + "\n" +
+                    this.userPass + "\n" +
+                    "is logged: " + isLogged + "\n" +
+                    "connection Id " + connectionId + "\n" +
+                    "registered to genres: ";
+        for (Integer key : idSubscriptions.keySet()) {
+            user = user + "\n" + key + "," + idSubscriptions.get(key);
+        }
+    return user;
+    }
 
     public String getUserName() {
         return userName;
@@ -70,6 +83,5 @@ public class User {
     public void setIdSubscriptions(HashMap<Integer, String> books_geners) {
         this.idSubscriptions = books_geners;
     }
-
 
 }

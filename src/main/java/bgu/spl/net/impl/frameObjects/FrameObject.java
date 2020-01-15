@@ -64,5 +64,12 @@ public abstract class FrameObject {
     }
 
     @Override
-    public String toString() { return ""; } //TODO implement
+    public String toString() {
+        String output = this.command + "\n";
+        for (String key : headers.keySet()) {
+            output = output + key + headers.get(key) + "\n";
+        }
+        output = output + body;
+        return output;
+    }
 }

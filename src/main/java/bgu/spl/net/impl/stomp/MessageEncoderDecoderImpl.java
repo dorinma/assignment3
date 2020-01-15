@@ -17,6 +17,7 @@ MessageEncoderDecoderImpl implements MessageEncoderDecoder<FrameObject> {
     @Override
     public FrameObject decodeNextByte(byte nextByte) {
         if (nextByte == '\u0000') {
+            System.out.println("if");
             return bytesToFrame(popString());
         }
         pushByte(nextByte);
@@ -51,18 +52,19 @@ MessageEncoderDecoderImpl implements MessageEncoderDecoder<FrameObject> {
 
     private FrameObject bytesToFrame(String stringBytes) {
         FrameObject frameObject = null;
-        String [] message = popString().split(System.lineSeparator());
+        String [] message = stringBytes.split("\n");
         HashMap<String, String> headers = new HashMap<>();
         String body = "";
 
         //Get the headers and the body of the message
         //TODO body can include :, we need to do while loop until there is enter, from than forward that is the body
-        for (int i = 1; i < message.length-1; i++) {
+        for (int i = 1; i < message.length; i++) {
             if(message[i].contains(":"))
                 headers.put(message[i].split(":")[0], message[i].split(":")[1]);
             else if(!message[i].isEmpty())
                 body += message[i];
         }
+        System.out.println(message[0]);
 
         //Get the type of the message
         if(message[0].equals("CONNECT"))
@@ -81,7 +83,7 @@ MessageEncoderDecoderImpl implements MessageEncoderDecoder<FrameObject> {
             frameObject = new SendClient(message[0], headers, body);
 
         }
-
+        System.out.println(frameObject.toString());
         return frameObject;
     }
 }

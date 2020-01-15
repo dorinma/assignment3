@@ -8,6 +8,7 @@ public class UnsubscribeClient extends FrameObject {
 
     public UnsubscribeClient(String type, HashMap<String, String> headers, String body) {
         super(type, headers, body);
+        init();
     }
 
     private String id;

@@ -9,14 +9,16 @@ import java.util.List;
 public class SubscribeClient extends FrameObject {
 
     public SubscribeClient(String type, HashMap<String, String> headers, String body) {
+
         super(type, headers, body);
+        init();
     }
 
     private String destination;
     private String id;
     private String receiptId;
 
-    private void init() {
+    public void init() {
         this.destination = getHeaders().get("destination");
         this.id = getHeaders().get("id");
         this.receiptId = getHeaders().get("receipt");

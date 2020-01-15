@@ -27,6 +27,21 @@ public class ConnectionsImpl<T> implements Connections<T> {
         genreSubscribers = new ConcurrentHashMap<>();
         handlers = new ConcurrentHashMap<>();
     }
+    public String toString()
+    {
+        String toPrint ="users:" + "\n";
+
+        for (Integer id : users.keySet()) {
+            toPrint = toPrint + id + users.get(id).toString() + "\n";
+        }
+        toPrint = toPrint + "handlers:" + "\n";
+        for (Integer id : handlers.keySet()) {
+            toPrint = toPrint + id + "\n";
+        }
+        return toPrint;
+    }
+
+
     @Override
     public boolean send(int connectionId, T msg) throws IOException {
         if (handlers.containsKey(connectionId)) {
