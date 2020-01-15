@@ -43,7 +43,6 @@ MessageEncoderDecoderImpl implements MessageEncoderDecoder<FrameObject> {
         bytes[len++] = nextByte;
     }
 
-
     private String popString() {
         String result = new String(bytes, 0, len, StandardCharsets.UTF_8);
         len = 0;
@@ -64,6 +63,7 @@ MessageEncoderDecoderImpl implements MessageEncoderDecoder<FrameObject> {
             else if(!message[i].isEmpty())
                 body += message[i];
         }
+        //body += '\u0000';
         System.out.println(message[0]);
 
         //Get the type of the message

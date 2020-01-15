@@ -23,7 +23,7 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
     private boolean shouldTerminate = false;
     private int connectionId;
     private ConnectionsImpl<FrameObject> connections;
-    private int currMsdId;
+    private int currMsgId;
 
     /**
      * Used to initiate the current client protocol with it's personal connection ID and the connections implementation
@@ -35,7 +35,7 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
     public void start(int connectionId, Connections<T> connections) {
         this.connections = (ConnectionsImpl<FrameObject>) connections;
         this.connectionId = connectionId;
-        currMsdId = 1;
+        currMsgId = 1;
         shouldTerminate = false;
     }
 
@@ -136,8 +136,6 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
     }
 
     private FrameObject trySubscribe(FrameObject msg) {
-        System.out.println("~~~~~i am in function try to subscribe");
-
         SubscribeClient sc = (SubscribeClient) msg;
         System.out.println(msg.toString());
         sc.init();
@@ -278,23 +276,39 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
         }
         String destination = sc.getDestination(); //this is the genre
         int subscription = -1;
+        //TODO fix
+        int newId = 1 + currUser.getIdSubscriptions().size() +2000;
         for (int i : currUser.getIdSubscriptions().keySet()) {
-            if(currUser.getIdSubscriptions().get(i).equals(destination))
+            if(currUser.getIdSubscriptions().get(i).equals(destination)){
+                newId++;
                 subscription = i;
+            }
         }
-        if (subscription == -1) {
-            //error. genere doesnt exist
-            shouldTerminate = true;
-            outHeaders.put("receipt-id", Integer.toString(connectionId));
-            outHeaders.put("message", "user does not subscribe to this genre");
-            return new ErrorServer("ERROR", outHeaders, "", true);
+
+        System.out.println(subscription);
+
+        if (subscription == -1) { //create new genre
+            String genre = sc.getDestination();
+            LinkedList<User> users = new LinkedList<>();
+            currUser.getGenres().add(genre);
+            currUser.getIdSubscriptions().put(newId, genre);
+            users.add(currUser);
+            connections.getGenreSubscribers().put(genre, users);
+            //outHeaders.put("receipt-id", receiptId);
+
+            outHeaders.put("subscription", Integer.toString(newId));
+            outHeaders.put("Message-id", Integer.toString(currMsgId));
+            currMsgId++;
+            outHeaders.put("destination", destination);
+            return  new MessageServer("MESSAGE", outHeaders, sc.getBody());
+
         }
 
         outHeaders.put("subscription", Integer.toString(subscription));
-        outHeaders.put("Message-id", Integer.toString(currMsdId));
-        currMsdId++;
+        outHeaders.put("Message-id", Integer.toString(currMsgId));
+        currMsgId++;
         outHeaders.put("destination", destination);
-        return new MessageServer("MESSAGE", outHeaders, sc.getBody());
+        return  new MessageServer("MESSAGE", outHeaders, sc.getBody());
     }
 
     private boolean validateHeaders(HashMap<String, String> headers) {
