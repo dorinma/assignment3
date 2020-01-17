@@ -64,8 +64,6 @@ MessageEncoderDecoderImpl implements MessageEncoderDecoder<FrameObject> {
             else if(!message[i].isEmpty())
                 body += message[i];
         }
-        //body += '\u0000';
-        //System.out.println(message[0]);
 
         //Get the type of the message
         if(message[0].equals("CONNECT"))
@@ -84,7 +82,7 @@ MessageEncoderDecoderImpl implements MessageEncoderDecoder<FrameObject> {
             frameObject = new SendClient(message[0], headers, body);
 
         }
-        System.out.println(frameObject.toString());
+        //System.out.println(frameObject.toString());
         return frameObject;
     }
 }

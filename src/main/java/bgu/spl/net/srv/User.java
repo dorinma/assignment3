@@ -1,14 +1,12 @@
 package bgu.spl.net.srv;
 
-import javafx.util.Pair;
-
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
 public class User {
 
-    private String userName; //cant be users with the same name
+    private String userName; //unique
     private String userPass;
     private boolean isLogged;
     private int connectionId;

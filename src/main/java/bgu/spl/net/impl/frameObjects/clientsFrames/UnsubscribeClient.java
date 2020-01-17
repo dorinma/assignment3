@@ -12,9 +12,11 @@ public class UnsubscribeClient extends FrameObject {
     }
 
     private String id;
+    private String receiptId;
 
     private void init() {
         this.id = getHeaders().get("id");
+        this.receiptId = getHeaders().get("receipt");
     }
 
     public String getId() {

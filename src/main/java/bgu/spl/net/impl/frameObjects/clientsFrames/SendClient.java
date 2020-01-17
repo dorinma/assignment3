@@ -1,10 +1,7 @@
 package bgu.spl.net.impl.frameObjects.clientsFrames;
 
 import bgu.spl.net.impl.frameObjects.FrameObject;
-import javafx.util.Pair;
-
 import java.util.HashMap;
-import java.util.List;
 
 public class SendClient extends FrameObject {
     private String destination;

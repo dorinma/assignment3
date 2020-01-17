@@ -3,8 +3,6 @@ package bgu.spl.net.impl.frameObjects.clientsFrames;
 import bgu.spl.net.impl.frameObjects.FrameObject;
 
 import java.util.HashMap;
-import java.util.List;
-import javafx.util.Pair;
 
 public class ConnectClient extends FrameObject {
 

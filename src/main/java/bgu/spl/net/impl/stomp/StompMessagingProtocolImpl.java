@@ -10,13 +10,11 @@ import bgu.spl.net.impl.frameObjects.serverFrames.ReciptServer;
 import bgu.spl.net.srv.Connections;
 import bgu.spl.net.srv.ConnectionsImpl;
 import bgu.spl.net.srv.User;
-import com.sun.org.apache.bcel.internal.generic.INSTANCEOF;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> {
 
@@ -46,31 +44,22 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
         if (msg.getCommand().equals("CONNECT")) {
             FrameObject msgToReply = tryLogin(msg);
             connections.send(connectionId, msgToReply);
-//            if (shouldTerminate)
-//                connections.disconnect(connectionId);
 
         } else if (msg.getCommand().equals("SUBSCRIBE")) {
             FrameObject msgToReply = trySubscribe(msg);
             connections.send(connectionId, msgToReply);
-//            if (shouldTerminate)
-//                connections.disconnect(connectionId);
 
         } else if (msg.getCommand().equals("UNSUBSCRIBE")) {
             FrameObject msgToReply = tryUnsubscribe(msg);
             connections.send(connectionId, msgToReply);
-//            if (shouldTerminate)
-//                connections.disconnect(connectionId);
 
         } else if (msg.getCommand().equals("DISCONNECT")) {
             FrameObject msgToReply = tryDisconnect(msg);
             connections.send(connectionId, msgToReply);
-            // connections.disconnect(connectionId);
 
         } else if (msg.getCommand().equals("SEND")) {
             FrameObject msgToReply = trySend(msg);
             connections.send(msgToReply.getHeaders().get("destination"), msgToReply);
-//            if (shouldTerminate)
-//                connections.disconnect(connectionId);
         }
 
     }
@@ -87,7 +76,7 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
         ConnectClient cc = (ConnectClient) msg;
         HashMap<String, String> outHeaders = new HashMap<>();
 
-        if (!validateHeaders(msg.getHeaders())) { //Invalidate headers
+        if (!validateHeaders(msg.getHeaders())) { //Invalid headers
             shouldTerminate = true;
             outHeaders.put("receipt-id", String.valueOf(connectionId));
             outHeaders.put("message", "malformed frame received");
@@ -125,11 +114,10 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
                     else
                     {
                         //Password doesn't match
-                        System.out.println("~~~~~~~~Password doesn't match\n");
                         shouldTerminate = true;
                         outHeaders.put("receipt-id", String.valueOf(connectionId));
                         outHeaders.put("message", "Wrong password");
-                        //return new ErrorServer("ERROR", outHeaders, "", true);
+                        //return new ErrorServer("ERROR", outHeaders, "", true); //TODO why not error?
                         return new ReciptServer("RECEIPT", outHeaders, "");
                     }
                 }
@@ -202,7 +190,7 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
         UnsubscribeClient sc = (UnsubscribeClient) msg;
         HashMap<String, String> outHeaders = new HashMap<>();
 
-        if (!validateHeaders(msg.getHeaders())) //Invalidate headers
+        if (!validateHeaders(msg.getHeaders())) //Invalid headers
         {
             shouldTerminate = true;
             outHeaders.put("receipt-id", String.valueOf(connectionId));
@@ -211,7 +199,7 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
         }
 
         User currUser = connections.getUsers().get(connectionId);
-        if (currUser == null || !currUser.isLogged()) //user does not connect/ exist
+        if (currUser == null || !currUser.isLogged()) //user isn't connected or doesn't exist.
         {
             shouldTerminate = true;
             outHeaders.put("receipt-id", String.valueOf(connectionId));
@@ -243,7 +231,7 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
         HashMap<String, String> outHeaders = new HashMap<>();
 
         User currUser = connections.getUsers().get(connectionId);
-        if (currUser == null || !currUser.isLogged()) //user does not connect/ exist
+        if (currUser == null || !currUser.isLogged()) //user isn't connected or doesn't exist.
         {
             shouldTerminate = true;
             outHeaders.put("receipt-id", String.valueOf(connectionId));
@@ -251,7 +239,7 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
             return new ErrorServer("ERROR", outHeaders, "", true);
         }
 
-        if (!validateHeaders(msg.getHeaders())) { // not validate headers
+        if (!validateHeaders(msg.getHeaders())) { //Invalid headers
             shouldTerminate = true;
             outHeaders.put("receipt-id", String.valueOf(connectionId));
             outHeaders.put("message", "malformed frame received");
@@ -269,7 +257,7 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
 
         SendClient sc = (SendClient) msg;
         HashMap<String, String> outHeaders = new HashMap<>();
-        if (!validateHeaders(msg.getHeaders())) {  //validate headers
+        if (!validateHeaders(msg.getHeaders())) {  //Invalid headers
             shouldTerminate = true;
             outHeaders.put("receipt-id", String.valueOf(connectionId));
             outHeaders.put("message", "malformed frame received");
@@ -309,8 +297,7 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
             outHeaders.put("Message-id", Integer.toString(currMsgId));
             currMsgId++;
             outHeaders.put("destination", destination);
-
-            return  new MessageServer("MESSAGE", outHeaders, sc.getBody());
+            return new MessageServer("MESSAGE", outHeaders, sc.getBody());
 
         }
 

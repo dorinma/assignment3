@@ -1,8 +1,6 @@
 package bgu.spl.net.impl.frameObjects;
 
 import java.util.HashMap;
-import java.util.List;
-import javafx.util.Pair;
 
 public abstract class FrameObject {
 

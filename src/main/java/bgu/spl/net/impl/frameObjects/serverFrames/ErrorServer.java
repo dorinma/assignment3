@@ -1,10 +1,8 @@
 package bgu.spl.net.impl.frameObjects.serverFrames;
 
 import bgu.spl.net.impl.frameObjects.FrameObject;
-import javafx.util.Pair;
 
 import java.util.HashMap;
-import java.util.List;
 
 public class ErrorServer extends FrameObject {
 
@@ -17,7 +15,7 @@ public class ErrorServer extends FrameObject {
     }
 
     private void init() {
-        this.receiptId = getHeaders().get("receipt-id");
+        this.receiptId = getHeaders().get("receipt"); //TODO was written "receipt-id", need to check.
         this.message = getHeaders().get("message");
     }
 

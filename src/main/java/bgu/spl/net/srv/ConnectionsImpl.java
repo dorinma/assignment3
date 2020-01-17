@@ -29,7 +29,7 @@ public class ConnectionsImpl<T> implements Connections<T> {
     }
     @Override
     public String toString() {
-        String output = "--CLIENT_HENDLER--: \n";
+        String output = "--CLIENT_HANDLER--: \n";
         for(Integer conID : handlers.keySet())
         {
             output = output + "conID: " + conID + "\n";
