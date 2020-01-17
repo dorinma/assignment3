@@ -21,7 +21,7 @@ public class StompServer {
             {
                 Server<FrameObject> reactor = Server.reactor(
                         2,
-                        7777,
+                        8888,
                         () -> new StompMessagingProtocolImpl<>(),
                         () -> new MessageEncoderDecoderImpl());
                 reactor.serve();

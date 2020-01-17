@@ -1,14 +1,12 @@
 package bgu.spl.net.srv;
 
 import bgu.spl.net.api.MessageEncoderDecoder;
-import bgu.spl.net.api.MessagingProtocol;
 import bgu.spl.net.api.StompMessagingProtocol;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.HashMap;
 
 public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler<T> {
 
@@ -19,7 +17,7 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
     private BufferedOutputStream out;
     private volatile boolean connected = true;
     private ConnectionsImpl connections;
-    private static int currConnectionId = 100;
+    private static int ConnectionCounter = 100;
     private int currId;
 
     public BlockingConnectionHandler(Socket sock, MessageEncoderDecoder<T> reader, StompMessagingProtocol<T> protocol) {
@@ -27,8 +25,8 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
         this.encdec = reader;
         this.protocol = protocol;
 
-        currConnectionId = currConnectionId +1;
-        currId = currConnectionId;
+        ConnectionCounter = ConnectionCounter +1;
+        currId = ConnectionCounter;
         connections = ConnectionsImpl.getInstance();
         connections.addHandler(currId, this);
     }
@@ -40,20 +38,21 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
 
             in = new BufferedInputStream(sock.getInputStream());
             out = new BufferedOutputStream(sock.getOutputStream());
-            System.out.println("is about to start process before while");
             protocol.start(currId, connections);
 
             while (!protocol.shouldTerminate() && connected && (read = in.read()) >= 0) {
                 T nextMessage = encdec.decodeNextByte((byte) read);
                 if (nextMessage != null) {
-                    System.out.println("is about to start process NOW");
+                    System.out.println("__NEXT MSG__:\n" + nextMessage+'\n');
                     protocol.process(nextMessage);
+                    System.out.println(connections.toString());
                 }
             }
             close();
+            System.out.println(connections.toString());
 
         } catch (IOException ex) {
-            connections.disconnect(currConnectionId);
+            connections.disconnect(currId);
             ex.printStackTrace();
         }
 
@@ -61,16 +60,16 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
 
     @Override
     public void close() throws IOException {
-        connections.disconnect(currConnectionId);
+        connections.disconnect(currId);
         connected = false;
         sock.close();
     }
 
     @Override
     public void send(T msg) throws IOException {
-        System.out.println("before writing");
-        System.out.println(connections.toString());
-        out.write(encdec.encode(msg));
-        out.flush();
+        synchronized (this) {
+            out.write(encdec.encode(msg));
+            out.flush();
+        }
     }
 }

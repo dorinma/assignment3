@@ -27,18 +27,30 @@ public class ConnectionsImpl<T> implements Connections<T> {
         genreSubscribers = new ConcurrentHashMap<>();
         handlers = new ConcurrentHashMap<>();
     }
-    public String toString()
-    {
-        String toPrint ="users:" + "\n";
+    @Override
+    public String toString() {
+        String output = "--CLIENT_HENDLER--: \n";
+        for(Integer conID : handlers.keySet())
+        {
+            output = output + "conID: " + conID + "\n";
+        }
+        output = output + "\n--GENRES--: \n";
+        for(String genre: genreSubscribers.keySet())
+        {
+            output = output + genre + ":\t";
+            for(User id : genreSubscribers.get(genre))
+            {
+                output += id.getUserName() + ", ";
+            }
+            output = output + "\n";
+        }
+        output = output + "\n--CLIENT_INFO--: \n";
+        for(Integer clientId: users.keySet())
+        {
+            output = output + clientId + ":\n" + users.get(clientId) + "\n";
+        }
+        return output;
 
-        for (Integer id : users.keySet()) {
-            toPrint = toPrint + id + users.get(id).toString() + "\n";
-        }
-        toPrint = toPrint + "handlers:" + "\n";
-        for (Integer id : handlers.keySet()) {
-            toPrint = toPrint + id + "\n";
-        }
-        return toPrint;
     }
 
 
@@ -69,7 +81,7 @@ public class ConnectionsImpl<T> implements Connections<T> {
        currUser.getGenres().clear();
        currUser.getIdSubscriptions().clear();
 
-        if (handlers.containsValue(connectionId)) {
+        if (handlers.containsKey(connectionId)) {
             handlers.remove(connectionId);
         }
 
