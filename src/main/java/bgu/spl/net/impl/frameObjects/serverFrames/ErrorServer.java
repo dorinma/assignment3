@@ -15,7 +15,7 @@ public class ErrorServer extends FrameObject {
     }
 
     private void init() {
-        this.receiptId = getHeaders().get("receipt"); //TODO was written "receipt-id", need to check.
+        this.receiptId = getHeaders().get("receipt-id");
         this.message = getHeaders().get("message");
     }
 

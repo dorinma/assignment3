@@ -13,7 +13,7 @@ public class StompServer {
             if (args[0].equals("tpc"))
             {
                 Server<FrameObject> tpc = Server.threadPerClient(
-                        8888,
+                        7777,
                         () -> new StompMessagingProtocolImpl<>(),
                         () -> new MessageEncoderDecoderImpl());
                 tpc.serve();
@@ -21,7 +21,7 @@ public class StompServer {
             {
                 Server<FrameObject> reactor = Server.reactor(
                         2,
-                        8888,
+                        7777,
                         () -> new StompMessagingProtocolImpl<>(),
                         () -> new MessageEncoderDecoderImpl());
                 reactor.serve();

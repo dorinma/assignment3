@@ -117,7 +117,6 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
                         shouldTerminate = true;
                         outHeaders.put("receipt-id", String.valueOf(connectionId));
                         outHeaders.put("message", "Wrong password");
-                        //return new ErrorServer("ERROR", outHeaders, "", true); //TODO why not error?
                         return new ReciptServer("RECEIPT", outHeaders, "");
                     }
                 }
@@ -219,9 +218,9 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
 
         usersSub.remove(currUser);
         currUser.getGenres().remove(genre);
-        outHeaders.put("receipt-id", String.valueOf(connectionId));
-        outHeaders.put("message", "user is not connected");
-        return new ErrorServer("RECEIPT", outHeaders, "", true);
+        String receiptId = sc.getReceiptId();
+        outHeaders.put("receipt-id", String.valueOf(receiptId));
+        return new ReciptServer("RECEIPT", outHeaders, "");
     }
 
     private FrameObject tryDisconnect(FrameObject msg) {
@@ -249,7 +248,6 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
         String receiptId = dc.getReceiptId();
         currUser.setLogged(false);
         outHeaders.put("receipt-id", receiptId);
-
         return new ReciptServer("RECEIPT", outHeaders, "");
     }
 
@@ -275,8 +273,7 @@ public class StompMessagingProtocolImpl<T> implements StompMessagingProtocol<T> 
 
         String destination = sc.getDestination(); //this is the genre
         int subscription = -1;
-        //TODO fix
-        int newId = 1 + currUser.getIdSubscriptions().size() +2000;
+        int newId = 1 + currUser.getIdSubscriptions().size() + 2000;
         for (int i : currUser.getIdSubscriptions().keySet()) {
             if(currUser.getIdSubscriptions().get(i).equals(destination)){
                 newId++;

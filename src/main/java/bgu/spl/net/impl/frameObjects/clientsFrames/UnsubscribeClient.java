@@ -30,4 +30,8 @@ public class UnsubscribeClient extends FrameObject {
     public boolean execute() {
         return false;
     }
+
+    public String getReceiptId() {
+        return receiptId;
+    }
 }
