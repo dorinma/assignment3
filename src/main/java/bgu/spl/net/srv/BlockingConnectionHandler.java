@@ -43,13 +43,13 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
             while (!protocol.shouldTerminate() && connected && (read = in.read()) >= 0) {
                 T nextMessage = encdec.decodeNextByte((byte) read);
                 if (nextMessage != null) {
-                    System.out.println("__NEXT MSG__:\n" + nextMessage+'\n');
+                    //System.out.println("__NEXT MSG__:\n" + nextMessage+'\n');
                     protocol.process(nextMessage);
-                    System.out.println(connections.toString());
+                    //System.out.println(connections.toString());
                 }
             }
             close();
-            System.out.println(connections.toString());
+            //System.out.println(connections.toString());
 
         } catch (IOException ex) {
             connections.disconnect(currId);

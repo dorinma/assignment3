@@ -57,6 +57,7 @@ public class ConnectionsImpl<T> implements Connections<T> {
     @Override
     public boolean send(int connectionId, T msg) throws IOException {
         if (handlers.containsKey(connectionId)) {
+            //System.out.println("___SEND___\n" + msg);
             handlers.get(connectionId).send(msg);
             return true;
         }
